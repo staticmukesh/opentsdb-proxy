@@ -9,14 +9,14 @@ import (
 )
 
 type Conf struct {
-	Port            int
+	Host            string
 	Servers         []string
 	LimitConnection int
 }
 
 func ReadConf(flagConf *string) *Conf {
 	conf := &Conf{
-		Port:            8080,
+		Host:            ":8080",
 		Servers:         []string{},
 		LimitConnection: 1000,
 	}
