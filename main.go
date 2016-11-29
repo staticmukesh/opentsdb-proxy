@@ -12,6 +12,7 @@ import (
 )
 
 var flagConf = flag.String("conf", "opentsdb.conf", "Location of configuration file. Defaults to opentsdb.toml in directory of the proxy executable.")
+
 var maxConnChan chan int
 var commandChan chan *string
 
@@ -32,7 +33,7 @@ func initialize(conf *conf.Conf) {
 		maxConnChan <- 0
 	}
 
-	cmdChan := make(chan *string)
+	commandChan = make(chan *string)
 }
 
 func startServer(host string) {
@@ -69,7 +70,7 @@ func handleConnection(conn net.Conn) {
 			break
 		}
 
-		cmdChan <- &cmd
+		commandChan <- &cmd
 		fmt.Print("Command received: ", string(cmd))
 	}
 }
