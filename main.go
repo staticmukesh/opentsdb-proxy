@@ -12,28 +12,20 @@ import (
 )
 
 var flagConf = flag.String("conf", "opentsdb.conf", "Location of configuration file. Defaults to opentsdb.toml in directory of the proxy executable.")
-
-var maxConnChan chan int
-var commandChan chan *string
+var cmds chan *string
 
 func main() {
 	flag.Parse()
 	conf := conf.ReadConf(flagConf)
 
 	initialize(conf)
-	proxy.Init(conf, commandChan)
+	proxy.Init(conf, cmds)
 
 	startServer(conf.Host)
 }
 
 func initialize(conf *conf.Conf) {
-	maxConnChan = make(chan int, conf.LimitConnection)
-
-	for i := 0; i < conf.LimitConnection; i++ {
-		maxConnChan <- 0
-	}
-
-	commandChan = make(chan *string)
+	cmds = make(chan *string)
 }
 
 func startServer(host string) {
@@ -48,29 +40,26 @@ func startServer(host string) {
 	fmt.Println("Server listening on " + host)
 
 	for {
-		<-maxConnChan
 		fmt.Println("Accepting connection...")
 		conn, err := ln.Accept()
 		if err != nil {
 			fmt.Println("Error: ", err.Error())
 		}
 
-		go handleConnection(conn)
+		go handleConnection(conn, cmds)
 	}
 }
 
-func handleConnection(conn net.Conn) {
+func handleConnection(conn net.Conn, cmds chan *string) {
 	fmt.Println("Handling request...")
 	for {
 		cmd, err := bufio.NewReader(conn).ReadString('\n')
 		if err != nil {
 			fmt.Println("Error while reading data: ", err.Error())
 			conn.Close()
-			maxConnChan <- 0
 			break
 		}
-
-		commandChan <- &cmd
+		cmds <- &cmd
 		fmt.Print("Command received: ", string(cmd))
 	}
 }

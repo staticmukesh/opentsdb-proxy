@@ -9,16 +9,14 @@ import (
 )
 
 type Conf struct {
-	Host            string
-	Servers         []string
-	LimitConnection int
+	Host    string
+	Servers []string
 }
 
 func ReadConf(flagConf *string) *Conf {
 	conf := &Conf{
-		Host:            ":8080",
-		Servers:         []string{},
-		LimitConnection: 1000,
+		Host:    ":8080",
+		Servers: []string{},
 	}
 
 	filePath := *flagConf
