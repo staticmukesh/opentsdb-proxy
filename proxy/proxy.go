@@ -22,6 +22,8 @@ func handleRequests(server string, cmds chan *string) {
 		fmt.Println("Error: ", err.Error())
 	}
 
+	defer conn.Close()
+
 	for {
 		select {
 		case cmd := <-cmds:
